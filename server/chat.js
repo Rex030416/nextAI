@@ -4,10 +4,13 @@ import { MemoryVectorStore } from "langchain/vectorstores/memory";
 import { RetrievalQAChain } from "langchain/chains";
 import { ChatOpenAI } from "langchain/chat_models/openai";
 import { PromptTemplate } from "langchain/prompts";
-import { PDFLoader } from "langchain/document_loaders/fs/pdf";
+import { UnstructuredLoader } from "langchain/document_loaders/fs/unstructured";
 
 const chat = async (filePath = "./uploads/your-default-file.pdf", query) => {
-  const loader = new PDFLoader(filePath);
+  const loader = new UnstructuredLoader(filePath, {
+    apiUrl: process.env.UNSTRUCTURED_API_URL,
+    apiKey: process.env.UNSTRUCTURED_API_KEY,
+  });
   const data = await loader.load();
 
   const textSplitter = new RecursiveCharacterTextSplitter({
