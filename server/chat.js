@@ -1,6 +1,6 @@
 import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
 import { OpenAIEmbeddings } from "langchain/embeddings/openai";
-import { MemoryVectorStore } from "langchain/vectorstores/memory";
+import { FaissStore } from "langchain/vectorstores/faiss";
 import { RetrievalQAChain } from "langchain/chains";
 import { ChatOpenAI } from "langchain/chat_models/openai";
 import { PromptTemplate } from "langchain/prompts";
@@ -24,7 +24,7 @@ const chat = async (filePath = "./uploads/your-default-file.pdf", query) => {
     openAIApiKey: process.env.REACT_APP_OPENAI_API_KEY,
   });
 
-  const vectorStore = await MemoryVectorStore.fromDocuments(
+  const vectorStore = await FaissStore.fromDocuments(
     splitDocs,
     embeddings
   );
