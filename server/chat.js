@@ -5,6 +5,10 @@ import { RetrievalQAChain } from "langchain/chains";
 import { ChatOpenAI } from "langchain/chat_models/openai";
 import { PromptTemplate } from "langchain/prompts";
 import { UnstructuredLoader } from "langchain/document_loaders/fs/unstructured";
+import { IndexFlatL2, IndexIVFFlat } from "faiss-node";
+
+const DIMENSION = 1536; // OpenAI embedding 维度
+const NLIST = 10; // IVF 聚类数（分成10个区域）
 
 const chat = async (filePath = "./uploads/your-default-file.pdf", query) => {
   const loader = new UnstructuredLoader(filePath, {
@@ -24,10 +28,17 @@ const chat = async (filePath = "./uploads/your-default-file.pdf", query) => {
     openAIApiKey: process.env.REACT_APP_OPENAI_API_KEY,
   });
 
-  const vectorStore = await FaissStore.fromDocuments(
-    splitDocs,
-    embeddings
-  );
+  // 当文档块数足够多时使用 IVF 索引，否则回退到 Flat
+  let vectorStore;
+  if (splitDocs.length >= 50) {
+    const quantizer = new IndexFlatL2(DIMENSION);
+    const ivfIndex = new IndexIVFFlat(quantizer, DIMENSION, NLIST);
+    vectorStore = await FaissStore.fromDocuments(splitDocs, embeddings, {
+      index: ivfIndex,
+    });
+  } else {
+    vectorStore = await FaissStore.fromDocuments(splitDocs, embeddings);
+  }
 
   const model = new ChatOpenAI({
     modelName: "gpt-3.5-turbo",
