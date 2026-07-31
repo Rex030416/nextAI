@@ -2,6 +2,9 @@ node_modules/
 .env
 build/
 uploads/
+data/
+backend/target/
+backend/*.log
 
 # IDE
 .idea/

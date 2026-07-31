@@ -1,0 +1,41 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: nextai-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${NEXTAI_DB_NAME:-nextai}
+      POSTGRES_USER: ${NEXTAI_DB_USER:-nextai}
+      POSTGRES_PASSWORD: ${NEXTAI_DB_PASSWORD:-change-me-for-production}
+    ports:
+      - "${NEXTAI_DB_PORT:-5433}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  minio:
+    image: minio/minio:latest
+    container_name: nextai-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${NEXTAI_MINIO_ACCESS_KEY:-nextai-minio}
+      MINIO_ROOT_PASSWORD: ${NEXTAI_MINIO_SECRET_KEY:-nextai-minio-local-secret}
+    ports:
+      - "${NEXTAI_MINIO_API_PORT:-9000}:9000"
+      - "${NEXTAI_MINIO_CONSOLE_PORT:-9001}:9001"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  postgres_data:
+  minio_data:

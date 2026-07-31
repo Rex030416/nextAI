@@ -1,0 +1,61 @@
+spring:
+  application:
+    name: nextai-backend
+  config:
+    import: optional:file:.env[.properties]
+  datasource:
+    url: ${NEXTAI_JDBC_DATABASE_URL:jdbc:postgresql://localhost:5433/nextai}
+    username: ${NEXTAI_DB_USER:nextai}
+    password: ${NEXTAI_DB_PASSWORD:change-me-for-production}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  flyway:
+    enabled: true
+  servlet:
+    multipart:
+      max-file-size: 30MB
+      max-request-size: 30MB
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY:}
+      chat:
+        options:
+          model: ${OPENAI_CHAT_MODEL:gpt-4o-mini}
+          temperature: 0.2
+      embedding:
+        options:
+          model: ${OPENAI_EMBEDDING_MODEL:text-embedding-3-small}
+          dimensions: 1536
+    vectorstore:
+      pgvector:
+        initialize-schema: false
+        dimensions: 1536
+        distance-type: COSINE_DISTANCE
+        index-type: HNSW
+
+server:
+  port: ${SERVER_PORT:8081}
+
+app:
+  object-storage:
+    minio:
+      endpoint: ${NEXTAI_MINIO_ENDPOINT:http://localhost:9000}
+      access-key: ${NEXTAI_MINIO_ACCESS_KEY:nextai-minio}
+      secret-key: ${NEXTAI_MINIO_SECRET_KEY:nextai-minio-local-secret}
+      bucket: ${NEXTAI_MINIO_BUCKET:nextai-documents}
+  semantic-cache:
+    enabled: ${SEMANTIC_CACHE_ENABLED:true}
+    minimum-similarity: ${SEMANTIC_CACHE_MINIMUM_SIMILARITY:0.92}
+    ttl-hours: ${SEMANTIC_CACHE_TTL_HOURS:24}
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000}
+  security:
+    demo-owner-id: ${DEMO_OWNER_ID:local-demo-user}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
