@@ -1,0 +1,2 @@
+ALTER TABLE documents
+  ALTER COLUMN content_sha256 TYPE VARCHAR(64);
